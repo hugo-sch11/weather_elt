@@ -15,12 +15,17 @@ Built using the **Medallion Architecture** (Bronze $\rightarrow$ Silver $\righta
 ```mermaid
 graph LR
     Source[NOAA GFS Zarr] -->|Extract & Load| Bronze[(Bronze Layer)]
-    Bronze -->|Cleanse & Derive| Silver[(Silver Layer)]
-    Silver -->|Aggregate & Flatten| Gold[(Gold Layer)]
+    Bronze --> BDate["date=..."]
+    BDate --> BFiles["dataset.zarr<br/>metadata.json<br/>_SUCCESS"]
 
-    Bronze -.- M1[_SUCCESS + metadata.json]
-    Silver -.- M2[_SUCCESS + metadata.json]
-    Gold -.- M3[_SUCCESS + metadata.json]
+    Bronze -->|Cleanse & Derive| Silver[(Silver Layer)]
+    Silver --> SDate["date=..."]
+    SDate --> SFiles["dataset.zarr<br/>metadata.json<br/>_SUCCESS"]
+
+    Silver -->|Aggregate & Flatten| Gold[(Gold Layer)]
+    Gold --> GTransform["<transformation_name>/"]
+    GTransform --> GDate["date=..."]
+    GDate --> GFiles["dataset.parquet<br/>metadata.json<br/>_SUCCESS"]
 ```
 ## Bronze Layer (Raw)
 * **Format:** Multidimensional Zarr
@@ -43,18 +48,20 @@ graph LR
 * Idempotency: Granular markers for each transformation (`hourly_global/_SUCCESS`, `daily_global/_SUCCESS`).
 
 ## Tech Stack
-* **Languages:** Python 3.13
-* **Core Data:** `xarray`, `dask`, `pandas`
+* **Languages:** `Python 3.13`
+* **Core Data:** `xarray`, `dask`
 * **Storage:** `minio-py`, `s3fs`, `fsspec`
 * **Orchestration:** Native `concurrent.futures.ThreadPoolExecutor`
-* **Infrastructure:** Docker (MinIO)
+* **Infrastructure:** `Docker (MinIO)`
 
 ## Project Structure
+```text
 src/
 ├── config/                 # Dataclasses for environment variables and settings
-├── ingestion/              # Bronze layer extractors and metadata builders
-├── orchestration/          # The master router (pipeline.py)
+├── ingestion/              # Bronze layer extractors for ingestion
+├── orchestration/          # The orchestrator (pipeline.py)
 ├── quality/                # Schema definitions and validation gates
-├── storage/                # MinIO client, path builders, and logging handlers
-├── transformations/        # Bronze $\rightarrow$ Silver and Silver $\rightarrow$ Gold logic
-└── utils/                  # Date helpers and byte formatters
+├── storage/                # MinIO client, metadata builders, path builders, and logging handlers
+├── transformations/        # Bronze $\rightarrow$ Silver & Silver $\rightarrow$ Gold logic
+└── utils/                  # Helper functions
+```
