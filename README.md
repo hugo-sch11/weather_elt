@@ -6,9 +6,9 @@ Built using the **Medallion Architecture** (Bronze $\rightarrow$ Silver $\righta
 ## Architectural Highlights
 
 *   **Stateless Idempotency:** Replaces traditional databases/registries with a **Marker File Pattern** (`_SUCCESS` files). The orchestrator relies purely on the storage layer to determine state, allowing for instant retries and zero wasted compute on re-runs.
-*   **Memory-Safe Streaming:** Utilizes **Xarray** and **Dask** to stream multidimensional Zarr arrays directly from remote sources to S3/MinIO without loading massive flatten datasets into RAM.
-*   **Automated Quality Gates:** Implements dynamic schema validation and automated null-variable dropping before data is promoted to the Silver layer.
-*   **Deep Lineage Tracking:** Every layer generates granular `metadata.json` files tracking execution time, data bounds, mathematical transformations, and upstream parent markers.
+*   **Efficient Streaming:** Utilizes **Xarray** and **Dask** to stream multidimensional Zarr arrays directly from remote sources to S3/MinIO without loading massive flatten datasets into RAM.
+*   **Quality Gates:** Implements dynamic schema validation and automated null-variable dropping before data is promoted to the Silver layer.
+*   **Lineage Tracking:** Every layer generates granular `metadata.json` files tracking execution time, data bounds, mathematical transformations, and upstream parent markers.
 
 ## The Medallion Data Flow
 
@@ -23,7 +23,7 @@ graph LR
     SDate --> SFiles["dataset.zarr<br/>metadata.json<br/>_SUCCESS"]
 
     Silver -->|Aggregate & Flatten| Gold[(Gold Layer)]
-    Gold --> GTransform["<transformation_name>/"]
+    Gold --> GTransform["{transformation_name}/"]
     GTransform --> GDate["date=..."]
     GDate --> GFiles["dataset.parquet<br/>metadata.json<br/>_SUCCESS"]
 ```
@@ -62,6 +62,6 @@ src/
 ├── orchestration/          # The orchestrator (pipeline.py)
 ├── quality/                # Schema definitions and validation gates
 ├── storage/                # MinIO client, metadata builders, path builders, and logging handlers
-├── transformations/        # Bronze $\rightarrow$ Silver & Silver $\rightarrow$ Gold logic
+├── transformations/        # Bronze to Silver & Silver to Gold logic
 └── utils/                  # Helper functions
 ```
