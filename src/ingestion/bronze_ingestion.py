@@ -36,11 +36,7 @@ class BronzeIngestion:
     def __init__(self, minio_client: MinioClient) -> None:
         self.minio_client = minio_client
 
-    def ingest_partition(
-        self, 
-        partition_date: str,
-        dataset: xr.Dataset,
-    ) -> None:
+    def ingest_partition(self, partition_date: str, dataset: xr.Dataset) -> None:
         """Handles the full lifecycle of a single partition."""
         # Idempotency Check (Marker File)
         marker_path = success_path(settings.BRONZE_PREFIX, partition_date)

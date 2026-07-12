@@ -1,14 +1,14 @@
 # Global Weather ELT Pipeline (Medallion Architecture)
 
-A production-grade, memory-efficient ELT pipeline that ingests, cleanses, and aggregates global weather data from the **NOAA Global Forecast System (GFS)**.
-Built using the **Medallion Architecture** (Bronze $\rightarrow$ Silver $\rightarrow$ Gold) and hosted entirely on a local **MinIO** object storage cluster.
+An ELT pipeline that ingests, cleanses, and aggregates global weather data from the **NOAA Global Forecast System (GFS)**.
+Built using the **Medallion Architecture** (Bronze -> Silver -> Gold) and hosted entirely on a local **MinIO** object storage cluster.
 
 ## Architectural Highlights
 
-*   **Stateless Idempotency:** Replaces traditional databases/registries with a **Marker File Pattern** (`_SUCCESS` files). The orchestrator relies purely on the storage layer to determine state, allowing for instant retries and zero wasted compute on re-runs.
-*   **Efficient Streaming:** Utilizes **Xarray** and **Dask** to stream multidimensional Zarr arrays directly from remote sources to S3/MinIO without loading massive flatten datasets into RAM.
+*   **Idempotency:** Relies on **Marker File** (`_SUCCESS` files) instead of traditional databases/registries. The orchestrator relies purely on the storage layer to determine state, allowing for instant retries and zero wasted compute on re-runs.
+*   **Efficient Streaming:** Utilizes **Xarray** and **Dask** to stream multidimensional Zarr arrays directly from remote sources to S3/MinIO in parallel without exploading RAM.
 *   **Quality Gates:** Implements dynamic schema validation and automated null-variable dropping before data is promoted to the Silver layer.
-*   **Lineage Tracking:** Every layer generates granular `metadata.json` files tracking execution time, data bounds, mathematical transformations, and upstream parent markers.
+*   **Lineage Tracking:** Every layer generates granular `metadata.json` files tracking execution time, data bounds, transformations applied, and upstream parent markers.
 
 ## The Medallion Data Flow
 
@@ -65,3 +65,7 @@ src/
 ├── transformations/        # Bronze to Silver & Silver to Gold logic
 └── utils/                  # Helper functions
 ```
+
+## Getting Started
+
+...
