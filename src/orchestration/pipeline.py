@@ -64,12 +64,12 @@ def main():
         with ThreadPoolExecutor(max_workers=5) as executor:
             futures = {}
             for day in settings.DAYS_TO_INGEST:
-                lazy_day_ds = source_dataset.sel(time=day)
+                day_dataset = source_dataset.sel(time=day)
 
                 future = executor.submit(
                     process_partition,
                     day,
-                    lazy_day_ds,
+                    day_dataset,
                     ingestion,
                     transformer_silver,
                     transformer_gold
@@ -83,7 +83,7 @@ def main():
                 except Exception:
                     # already logged, just collect for summary
                     failed_days.append(day)
-                    raise
+                    #raise #Debug
 
     finally:
         # Cleanup Log Handlers
@@ -93,7 +93,7 @@ def main():
 
     end_execution_time = time.time()
     print(f"Total Pipeline Execution time: {end_execution_time-start_execution_time:.2f}s")
-    ##### B:6h ; S:1h ; G:42min #####
+
     if failed_days:
         print(f"{len(failed_days)} days failed processing: {failed_days}")
         # sys.exit(1)

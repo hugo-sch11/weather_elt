@@ -17,7 +17,7 @@ class Settings:
     MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
     MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
-    BUCKET_NAME = "weather-data-bucket"
+    BUCKET_NAME = "data"
 
     BRONZE_PREFIX = "bronze"
     SILVER_PREFIX = "silver"
@@ -27,7 +27,8 @@ class Settings:
         {BRONZE_PREFIX, SILVER_PREFIX, GOLD_PREFIX}
     )
 
-    DAYS_TO_INGEST = get_date_list("2015-01-15", 365)
+    # TO MODIFY! (this dataset date only go from 2015-01-15 to 2024-06-30)
+    DAYS_TO_INGEST = get_date_list("2015-01-15", 0)
 
     storage_options = {
         "key": MINIO_ROOT_USER,

@@ -21,7 +21,7 @@ def bytes_to_highest_unit(nbytes, pten=0):
     if (nbytes % 1024) == nbytes or pten == 15:
         return nbytes, pten
     else:
-        return bytes_to_highest_unit(nbytes / 1024,pten+3)
+        return bytes_to_highest_unit(nbytes / 1024, pten+3)
 
 
 def power_of_ten_to_literal(p:int) -> str:
@@ -74,7 +74,7 @@ def get_next_day(date: str) -> str:
     Returns:
         str: The ISO 8601 date (YYYY-MM-DD) that is the day after `date`.
     """
-    return (datetime.strptime(date,"%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+    return (datetime.strptime(date, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
 
 
 def get_date_list(date: str, duration: int) -> list[str]:
@@ -85,10 +85,10 @@ def get_date_list(date: str, duration: int) -> list[str]:
     Returns:
         list[str]: All the days from `date` to `date` + `duration` in ISO 8601 (YYYY-MM-DD).
     Example:
-        >>> get_date_list("2025-01-01",3)
+        >>> get_date_list("2025-01-01", 3)
         ['2025-01-01', '2025-01-02', '2025-01-03', '2025-01-04']
     """
-    date_datetime = datetime.strptime(date,"%Y-%m-%d")
+    date_datetime = datetime.strptime(date, "%Y-%m-%d")
     return [
         (date_datetime + timedelta(days=i)).strftime("%Y-%m-%d")
         for i in range(duration+1)
@@ -97,8 +97,8 @@ def get_date_list(date: str, duration: int) -> list[str]:
 
 def get_delta_two_dates(date1: str, date2: str) -> int:
     """Returns number of days separating two str dates(YYYY-MM-DD)"""
-    date1_datetime = datetime.strptime(date1,"%Y-%m-%d")
-    date2_datetime = datetime.strptime(date2,"%Y-%m-%d")
+    date1_datetime = datetime.strptime(date1, "%Y-%m-%d")
+    date2_datetime = datetime.strptime(date2, "%Y-%m-%d")
     return (date2_datetime - date1_datetime).days
 
 
@@ -118,9 +118,9 @@ def main():
     print(f"{test_bytes}Bytes = {bytes_to_highest_unit_literal(test_bytes)}")
     test_date = "2026-06-30"
     print(f"One day : {test_date}, and its next day : {get_next_day(test_date)}")
-    print(f"One day and its 3 next days : {get_date_list(test_date,3)}")
+    print(f"One day and its 3 next days : {get_date_list(test_date, 3)}")
     print(f"365days of 800MB/days = {bytes_to_highest_unit_literal((800*10**6)*365)}")
-    test_dates = ("2025-01-01","2025-01-13")
+    test_dates = ("2025-01-01", "2025-01-13")
     print(f"{test_dates}, gap : {get_delta_two_dates(*test_dates)} days")
 
 

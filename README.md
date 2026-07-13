@@ -27,6 +27,7 @@ graph LR
     GTransform --> GDate["date=..."]
     GDate --> GFiles["dataset.parquet<br/>metadata.json<br/>_SUCCESS"]
 ```
+
 ## Bronze Layer (Raw)
 * **Format:** Multidimensional Zarr
 * **Action:** Extracts hourly global weather grids (Temperature, Wind U/V, Precipitation) from `dynamical.org` and streams them to MinIO partitioned by day.
@@ -50,7 +51,7 @@ graph LR
 ## Tech Stack
 * **Languages:** `Python 3.13`
 * **Core Data:** `xarray`, `dask`
-* **Storage:** `minio-py`, `s3fs`, `fsspec`
+* **Storage:** `minio-py`, `s3fs`
 * **Orchestration:** Native `concurrent.futures.ThreadPoolExecutor`
 * **Infrastructure:** `Docker (MinIO)`
 
@@ -68,4 +69,21 @@ src/
 
 ## Getting Started
 
-...
+**Linux or WSL:** 
+
+**Prerequisites:**
+* `Python 3.13+`(+/-)
+* `Docker`(added to the docker group: `sudo usermod -aG docker $USER`)
+
+**Quick Start**
+1. Clone the repository
+```bash
+git clone https://github.com/hugo-sch11/weather_elt.git
+cd weather_elt
+```
+2. Run the setup script
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+This will automatically create the python virtual environment, install dependencies, create a .env with your wished credentials and start the MinIO docker container.
