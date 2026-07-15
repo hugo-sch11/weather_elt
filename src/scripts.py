@@ -97,47 +97,47 @@
 #     input("Continue to next layer ?")
 
 """ Test gold with DuckDB"""
-import duckdb
-from src.config.settings import settings
-
-con = duckdb.connect()
-
-# Install & Load S3 extension
-con.execute("INSTALL httpfs; LOAD httpfs;")
-
-# Configure credentials
-con.execute(f"SET s3_endpoint='{settings.MINIO_ENDPOINT}';")
-con.execute(f"SET s3_access_key_id='{settings.MINIO_ROOT_USER}';")
-con.execute(f"SET s3_secret_access_key='{settings.MINIO_ROOT_PASSWORD}';")
-con.execute("SET s3_region='eu-west-3';")
-con.execute("SET s3_use_ssl=false;")
-con.execute("SET s3_url_style='path';")
-
-query1 = """
-    SELECT latitude, longitude, temperature_2m_min AS MinTmp, temperature_2m_mean AS MeanTmp, temperature_2m_max AS MaxTmp
-    FROM read_parquet('s3://weather-data-bucket/gold/daily_global/**/*.parquet')
-    WHERE date = '2015-08-15' 
-        AND latitude BETWEEN 25 AND 60 
-        AND temperature_2m_max - temperature_2m_min > 20
-"""
-
-query2 = """
-    DESCRIBE SELECT *
-    FROM read_parquet('s3://weather-data-bucket/gold/daily_global/**/*.parquet')
-"""
-# Output:
-"""
-           column_name column_type null   key default extra
-0             latitude      DOUBLE  YES  None    None  None
-1            longitude      DOUBLE  YES  None    None  None
-2          spatial_ref      BIGINT  YES  None    None  None
-3  temperature_2m_mean       FLOAT  YES  None    None  None
-4   temperature_2m_min       FLOAT  YES  None    None  None
-5   temperature_2m_max       FLOAT  YES  None    None  None
-6  wind_speed_10m_mean       FLOAT  YES  None    None  None
-7   wind_speed_10m_max       FLOAT  YES  None    None  None
-8                 date        DATE  YES  None    None  None
-"""
-
-df = con.execute(query1).df()
-print(df)
+# import duckdb
+# from src.config.settings import settings
+# 
+# con = duckdb.connect()
+# 
+# # Install & Load S3 extension
+# con.execute("INSTALL httpfs; LOAD httpfs;")
+# 
+# # Configure credentials
+# con.execute(f"SET s3_endpoint='{settings.MINIO_ENDPOINT}';")
+# con.execute(f"SET s3_access_key_id='{settings.MINIO_ROOT_USER}';")
+# con.execute(f"SET s3_secret_access_key='{settings.MINIO_ROOT_PASSWORD}';")
+# con.execute("SET s3_region='eu-west-3';")
+# con.execute("SET s3_use_ssl=false;")
+# con.execute("SET s3_url_style='path';")
+# 
+# query1 = """
+#     SELECT latitude, longitude, temperature_2m_min AS MinTmp, temperature_2m_mean AS MeanTmp, temperature_2m_max AS MaxTmp
+#     FROM read_parquet('s3://weather-data-bucket/gold/daily_global/**/*.parquet')
+#     WHERE date = '2015-08-15' 
+#         AND latitude BETWEEN 25 AND 60 
+#         AND temperature_2m_max - temperature_2m_min > 20
+# """
+# 
+# query2 = """
+#     DESCRIBE SELECT *
+#     FROM read_parquet('s3://weather-data-bucket/gold/daily_global/**/*.parquet')
+# """
+# # Output:
+# """
+#            column_name column_type null   key default extra
+# 0             latitude      DOUBLE  YES  None    None  None
+# 1            longitude      DOUBLE  YES  None    None  None
+# 2          spatial_ref      BIGINT  YES  None    None  None
+# 3  temperature_2m_mean       FLOAT  YES  None    None  None
+# 4   temperature_2m_min       FLOAT  YES  None    None  None
+# 5   temperature_2m_max       FLOAT  YES  None    None  None
+# 6  wind_speed_10m_mean       FLOAT  YES  None    None  None
+# 7   wind_speed_10m_max       FLOAT  YES  None    None  None
+# 8                 date        DATE  YES  None    None  None
+# """
+# 
+# df = con.execute(query1).df()
+# print(df)

@@ -1,8 +1,8 @@
 import logging
 import numpy as np
 import xarray as xr
-from typing import Hashable
 import time
+from typing import Hashable
 
 from src.config.settings import settings
 from src.storage.paths import dataset_path, metadata_path, s3_path, success_path
@@ -10,6 +10,7 @@ from src.storage.metadata import build_silver_metadata, metadata_to_bytes
 from src.storage.minio import MinioClient
 from src.quality.validation import validate_dataset
 from src.quality.schema import NOAA_GFS_BRONZE_SCHEMA
+from src.utils.util import is_null_variable_percentage
 
 logger = logging.getLogger(__name__)
 
@@ -24,18 +25,8 @@ class BronzeToSilverTransformer:
         s3_url = s3_path(path=bronze_dataset_path)
         return xr.open_zarr(s3_url, storage_options=settings.storage_options, zarr_format=2)
 
-    ### Maybe move it to utils
-    @staticmethod
-    def null_variable(dataset: xr.Dataset, var_name: Hashable, threshold: float = 0.99) -> bool:
-        """Checks whether a variable is completely or mostly null in a dataset."""
-        total_elements = dataset[var_name].size
-        if total_elements == 0:
-            return True
-        non_null_count = int(dataset[var_name].count().compute())
-        null_ratio = 1.0 - (non_null_count / total_elements)
-        return null_ratio >= threshold
 
-    def _apply_transformations(self, dataset: xr.Dataset) -> tuple[xr.Dataset,list[Hashable],list[Hashable]]:
+    def _apply_transformations(self, dataset: xr.Dataset) -> tuple[xr.Dataset, list[Hashable], list[Hashable]]:
         """
         Applies domain-specific transformations to create the Silver layer.
         Domain-specific: wind speed, wind_direction
@@ -43,8 +34,8 @@ class BronzeToSilverTransformer:
         """
         logger.info("Applying derived metric transformations...")
 
-        # Drop null variable
-        vars_to_drop = [var for var in dataset.data_vars if self.null_variable(dataset, var)]
+        # Drop variable >= 10.00% null
+        vars_to_drop = [var for var in dataset.data_vars if is_null_variable_percentage(dataset, var)]
         if vars_to_drop:
             logger.warning(f"Dropping variables due to null values: {vars_to_drop}")
             dataset = dataset.drop_vars(vars_to_drop)

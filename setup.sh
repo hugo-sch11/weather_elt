@@ -29,13 +29,14 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 # Start MinIO server
+# For a specific storing path, can add: -v ASBOLUTE_PATH:/weather-data-bucket, before the env line
 echo "Starting MinIO container..."
 docker run -d \
     --name minio \
     -p 9000:9000 \
     -p 9001:9001 \
     --env-file .env \
-    quay.io/minio/minio server /data --console-address ":9001"
+    quay.io/minio/minio server /weather-data-bucket --console-address ":9001"
 
 echo ""
 echo "Setup complete!"

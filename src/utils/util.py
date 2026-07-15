@@ -3,6 +3,7 @@ Helper functions.
 """
 import io
 import xarray
+from typing import Hashable
 
 from datetime import datetime, timedelta
 from xarray.core.dataset import Dataset
@@ -111,6 +112,16 @@ def dataset_to_bytes(dataset: Dataset) -> bytes:
 def bytes_to_dataset(bytes_data: bytes) -> Dataset:
     buffer = io.BytesIO(bytes_data)
     return xarray.open_dataset(buffer)
+
+
+def is_null_variable_percentage(dataset: xarray.Dataset, var_name: Hashable, threshold_percentage: float = 10.00) -> bool:
+    """Checks whether a variable is null up to the `threshold` percentage in a dataset."""
+    total_elements = dataset[var_name].size
+    if total_elements == 0:
+        return True
+    non_null_count = int(dataset[var_name].count().compute())
+    null_percentage = (1.0 - (non_null_count / total_elements)) * 100
+    return null_percentage >= threshold_percentage
 
 
 def main():

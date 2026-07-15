@@ -64,7 +64,8 @@ src/
 ├── quality/                # Schema definitions and validation gates
 ├── storage/                # MinIO client, metadata builders, path builders, and logging handlers
 ├── transformations/        # Bronze to Silver & Silver to Gold logic
-└── utils/                  # Helper functions
+├── utils/                  # Helper functions
+└──tests/                   # Data tests and unit tests
 ```
 
 ## Getting Started

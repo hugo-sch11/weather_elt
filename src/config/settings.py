@@ -17,7 +17,7 @@ class Settings:
     MINIO_ROOT_USER = os.getenv("MINIO_ROOT_USER")
     MINIO_ROOT_PASSWORD = os.getenv("MINIO_ROOT_PASSWORD")
 
-    BUCKET_NAME = "data"
+    BUCKET_NAME = "weather-data-bucket"
 
     BRONZE_PREFIX = "bronze"
     SILVER_PREFIX = "silver"
