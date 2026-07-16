@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from dotenv import load_dotenv
 import os
-
 from src.utils.util import get_date_list
 
 load_dotenv()
@@ -28,7 +27,7 @@ class Settings:
     )
 
     # TO MODIFY! (this dataset date only go from 2015-01-15 to 2024-06-30)
-    DAYS_TO_INGEST = get_date_list("2015-01-15", 0)
+    DAYS_TO_INGEST = get_date_list("2015-01-15", 365) # done with 365
 
     storage_options = {
         "key": MINIO_ROOT_USER,

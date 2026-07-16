@@ -12,25 +12,6 @@
 # #print(today, type(today))
 # print(f"Log of {today}: \n{log_handler.get_log_content(log_path(today))}")
 
-"""Checking number of days ingested"""
-# from src.storage.minio import MinioClient
-# from src.config.settings import settings
-# 
-# minio_client = MinioClient()
-# 
-# objects = minio_client.client.list_objects(
-#     settings.BUCKET_NAME,
-#     prefix=f"settings.BRONZE_PREFIX/"
-# )
-# l = []
-# for obj in objects:
-#     l.append(obj.object_name)
-# nl = len(l)
-# nd = len(settings.DAYS_TO_INGEST)
-# print(f"Numbers of days ingested: {nl}")
-# print(f"Numbers of days supposed to be ingested: {nd}")
-# print(f"Days ingested equal days setup: {nl == nd}")
-
 """Checking dataset"""
 # import fsspec
 # import xarray

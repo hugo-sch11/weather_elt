@@ -4,7 +4,7 @@ Helper functions.
 import io
 import xarray
 from typing import Hashable
-
+import fsspec
 from datetime import datetime, timedelta
 from xarray.core.dataset import Dataset
 
