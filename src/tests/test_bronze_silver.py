@@ -2,12 +2,11 @@ import xarray
 import time
 import fsspec
 from src.config.settings import settings
-from src.storage.paths import s3_path
 
 def get_global_dataset(glob_path: str) -> xarray.Dataset:
     """Concat all partition dataset from a global path (e.g."bronze/date=*/dataset.zarr")"""
     fs = fsspec.filesystem("s3", **settings.storage_options)
-    paths = fs.glob(s3_path(bucket=settings.BUCKET_NAME, path=glob_path))
+    paths = fs.glob(f"{settings.BUCKET_NAME}/{glob_path}")
     datasets = [
         xarray.open_zarr(
             fs.get_mapper(path), 
@@ -18,8 +17,9 @@ def get_global_dataset(glob_path: str) -> xarray.Dataset:
     ]
     return xarray.concat(datasets, dim="time")
 
-def dataset_null_percentage(dataset: xarray.Dataset) -> None:
+def dataset_null_check(dataset: xarray.Dataset) -> None:
     print("========== NULL CHECK ==========")
+    # alternative = int(dataset[var].isnull().sum().compute())
     for var in dataset.data_vars:
         total_elements = dataset[var].size
         print(f"{var}, total_elements={total_elements}")
@@ -30,7 +30,7 @@ def dataset_null_percentage(dataset: xarray.Dataset) -> None:
 
 def dataset_days_check(dataset: xarray.Dataset) -> None:
     print("========== DAYS CHECK ==========")
-    print(f"Dates supposed to be ingested ({len(settings.DAYS_TO_INGEST)}days*24hours): {len(settings.DAYS_TO_INGEST * 24)}")
+    print(f"Dates supposed to be ingested ({len(settings.DAYS_TO_INGEST)}days*24hours): {len(settings.DAYS_TO_INGEST)*24}")
     print(f"Dates ingested: {dataset["time"].size}")
     dates = [date.strftime("%Y-%m-%d") for date in dataset.groupby("time.date").groups.keys()]
     same_days_ingested = dates == settings.DAYS_TO_INGEST
@@ -48,7 +48,7 @@ def main() -> None:
     #dataset = get_global_dataset("bronze/date=*/dataset.zarr")
     #print(dataset)
     # NULL CHECK (long execution: 10min)
-    #dataset_null_percentage(dataset)
+    #dataset_null_check(dataset)
     # CHECKING NUMBER OF DAYS INGESTED
     #dataset_days_check(dataset)
 
@@ -57,7 +57,7 @@ def main() -> None:
     dataset = get_global_dataset("silver/date=*/dataset.zarr")
     #print(dataset)
     # NULL CHECK (long execution: 20min)
-    # dataset_null_percentage(dataset)
+    #dataset_null_check(dataset)
     # CHECKING NUMBER OF DAYS INGESTED
     dataset_days_check(dataset)
 
@@ -147,15 +147,19 @@ Attributes:
 temperature_2m, total_elements=8995311360
 temperature_2m, non_null_count=8982852480
 temperature_2m, null_percentage=0.14%
+-
 wind_direction_10m, total_elements=8995311360
 wind_direction_10m, non_null_count=8982852480
 wind_direction_10m, null_percentage=0.14%
+-
 wind_speed_10m, total_elements=8995311360
 wind_speed_10m, non_null_count=8982852480
 wind_speed_10m, null_percentage=0.14%
+-
 wind_u_10m, total_elements=8995311360
 wind_u_10m, non_null_count=8982852480
 wind_u_10m, null_percentage=0.14%
+-
 wind_v_10m, total_elements=8995311360
 wind_v_10m, non_null_count=8982852480
 wind_v_10m, null_percentage=0.14%

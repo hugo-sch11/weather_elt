@@ -25,7 +25,7 @@ graph LR
     Silver -->|Aggregate & Flatten| Gold[(Gold Layer)]
     Gold --> GTransform["{transformation_name}/"]
     GTransform --> GDate["date=..."]
-    GDate --> GFiles["dataset.parquet<br/>metadata.json<br/>_SUCCESS"]
+    GDate --> GFiles["data.parquet<br/>metadata.json<br/>_SUCCESS"]
 ```
 
 ## Bronze Layer (Raw)

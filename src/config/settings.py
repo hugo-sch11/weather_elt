@@ -27,7 +27,7 @@ class Settings:
     )
 
     # TO MODIFY! (this dataset date only go from 2015-01-15 to 2024-06-30)
-    DAYS_TO_INGEST = get_date_list("2015-01-15", 365) # done with 365
+    DAYS_TO_INGEST = get_date_list("2015-01-15", 365) # done with 365, replace with 0 for quickstart
 
     storage_options = {
         "key": MINIO_ROOT_USER,
