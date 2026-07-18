@@ -1,10 +1,12 @@
 from src.config.settings import settings
 
+
 def s3_path(bucket: str=settings.BUCKET_NAME, path: str="") -> str:
     """
     s3://{bucket}/{path}
     """
     return f"s3://{bucket}/{path}"
+
 
 def root_path(layer: str) -> str:
     """
@@ -15,6 +17,7 @@ def root_path(layer: str) -> str:
         raise ValueError(f"The layer must in {settings.LAYER_PREFIX}.")
     return f"{layer}/"
 
+
 def partition_path(layer: str, partition: str) -> str:
     """
     {layer}/date={partition}/
@@ -23,6 +26,7 @@ def partition_path(layer: str, partition: str) -> str:
         root_path(layer)
         + f"date={partition}/"
     )
+
 
 def dataset_path(layer: str, partition: str) -> str:
     """
@@ -33,6 +37,7 @@ def dataset_path(layer: str, partition: str) -> str:
         + "dataset.zarr"
     )
 
+
 def metadata_path(layer: str, partition: str) -> str:
     """
     {layer}/date={partition}/metadata.json
@@ -42,11 +47,13 @@ def metadata_path(layer: str, partition: str) -> str:
         + "metadata.json"
     )
 
+
 def log_path(date: str) -> str:
     """
     log/ingestion{date}.log
     """
     return f"log/ingestion{date}.log"
+
 
 def success_path(layer: str, partition: str) -> str:
     """
@@ -57,9 +64,11 @@ def success_path(layer: str, partition: str) -> str:
         + "_SUCCESS"
     )
 
+
 # Includes transformations name (specific to gold)
 def gold_path(transformation_name: str, partition_date: str) -> str:
     """
     f"{settings.GOLD_PREFIX}/{transfo_name}/date={partition_date}/"
     """
     return f"{settings.GOLD_PREFIX}/{transformation_name}/date={partition_date}/"
+

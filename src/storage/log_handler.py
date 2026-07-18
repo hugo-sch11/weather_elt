@@ -33,6 +33,7 @@ class MinioLogHandler(logging.Handler):
                 content_type="text/plain",
             )
 
+
     def get_log_content(self, name: str = "") -> str:
         """
         Fetch the log content as a string.

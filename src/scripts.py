@@ -12,31 +12,6 @@
 # #print(today, type(today))
 # print(f"Log of {today}: \n{log_handler.get_log_content(log_path(today))}")
 
-"""Checking dataset"""
-# import fsspec
-# import xarray
-# from src.config.settings import settings
-
-# fs = fsspec.filesystem("s3", **settings.storage_options)
-# bucket = settings.BUCKET_NAME
-# prefix = f"settings.BRONZE_PREFIX/"
-# paths = fs.glob(f"s3://{bucket}/{prefix}date=*/dataset.zarr")
-# datasets = [
-#     xarray.open_zarr(
-#         fs.get_mapper(path), 
-#         consolidated=True,
-#         zarr_format=2
-#     ) 
-#     for path in paths
-# ]
-# dataset = xarray.concat(datasets, dim="time")
-
-# for var in dataset.data_vars:
-#     #print(dataset[var].isnull().mean().compute())
-#     print(dataset[var].count().compute())
-#     print(dataset[var].min(skipna=True).compute())
-#     print(dataset[var].max(skipna=True).compute())
-
 """Replacing registry by marker file"""
 # import re
 # from src.storage.minio import MinioClient

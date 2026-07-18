@@ -6,7 +6,9 @@ from minio.error import S3Error
 from src.config.settings import settings
 from src.utils.util import bytes_to_highest_unit_literal
 
+
 logger = logging.getLogger(__name__)
+
 
 class MinioClient:
     def __init__(self):
@@ -76,7 +78,7 @@ class MinioClient:
                 return False
             raise
 
-    # Dangerous function `:)`
+    # Dangerous function!!!
     # def cleanup_layer(self, path: str) -> None:
     #     """Delete recursively a layer after confirmation."""
     #     confirmation = input(f"Confirm deletion of {path}, type \"Confirmation\": ")

@@ -10,7 +10,9 @@ from src.storage.minio import MinioClient
 from src.storage.log_handler import MinioLogHandler
 from src.transformations.silver_to_gold import SilverToGoldTransformer
 
+
 logger = logging.getLogger(__name__)
+
 
 def process_partition(
     target_day: str,
@@ -84,7 +86,6 @@ def main():
                     # already logged, just collect for summary
                     failed_days.append(day)
                     #raise #Debug
-
     finally:
         # Cleanup Log Handlers
         log_handler.flush()
@@ -100,5 +101,7 @@ def main():
     else:
         print("All partitions processed successfully!")
 
+
 if __name__ == "__main__":
     main()
+

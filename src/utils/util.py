@@ -7,6 +7,7 @@ from typing import Hashable
 from datetime import datetime, timedelta
 from xarray.core.dataset import Dataset
 
+
 def bytes_to_highest_unit(nbytes, pten=0):
     """
     Parameters:
@@ -52,6 +53,7 @@ def power_of_ten_to_literal(p:int) -> str:
             return "P" # Peta
         case _:
             raise ValueError("p must be 0, 3, 6, 9, 12 or 15")
+
 
 def bytes_to_highest_unit_literal(nbytes) -> str:
     """Converts a number of bytes to a human-readable string with a metric prefix.
@@ -136,3 +138,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

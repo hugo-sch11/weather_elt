@@ -1,7 +1,9 @@
-from dataclasses import dataclass
 from dotenv import load_dotenv
+from dataclasses import dataclass
 import os
+
 from src.utils.util import get_date_list
+
 
 load_dotenv()
 
@@ -34,6 +36,5 @@ class Settings:
         "secret": MINIO_ROOT_PASSWORD,
         "client_kwargs": {"endpoint_url": f"http://{MINIO_ENDPOINT}"}
     }
-
 
 settings = Settings()

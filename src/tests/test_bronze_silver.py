@@ -1,15 +1,19 @@
 import xarray
 import time
 import fsspec
+import pandas
+
 from src.config.settings import settings
+
 
 def get_global_dataset(glob_path: str) -> xarray.Dataset:
     """Concat all partition dataset from a global path (e.g."bronze/date=*/dataset.zarr")"""
     fs = fsspec.filesystem("s3", **settings.storage_options)
-    paths = fs.glob(f"{settings.BUCKET_NAME}/{glob_path}")
+    paths = sorted(fs.glob(f"{settings.BUCKET_NAME}/{glob_path}"))
     datasets = [
         xarray.open_zarr(
-            fs.get_mapper(path), 
+            f"s3://{path}", 
+            storage_options=settings.storage_options, 
             consolidated=True,
             zarr_format=2
         ) 
@@ -17,55 +21,58 @@ def get_global_dataset(glob_path: str) -> xarray.Dataset:
     ]
     return xarray.concat(datasets, dim="time")
 
+
 def dataset_null_check(dataset: xarray.Dataset) -> None:
     print("========== NULL CHECK ==========")
-    # alternative = int(dataset[var].isnull().sum().compute())
+    counts = dataset.count().compute()
     for var in dataset.data_vars:
         total_elements = dataset[var].size
-        print(f"{var}, total_elements={total_elements}")
-        non_null_count = int(dataset[var].count().compute())
-        print(f"{var}, non_null_count={non_null_count}")
+        non_null_count = int(counts[var].values)
         null_percentage = (1.0 - (non_null_count / total_elements)) * 100
-        print(f"{var}, null_percentage={null_percentage:.2f}%")
+        print(f"{var}, total_elements={total_elements}, non_null_count={non_null_count}, null_percentage={null_percentage:.2f}%")
 
-def dataset_days_check(dataset: xarray.Dataset) -> None:
+
+def dataset_days_check(dataset: xarray.Dataset, expected_days: list[str]) -> None:
     print("========== DAYS CHECK ==========")
-    print(f"Dates supposed to be ingested ({len(settings.DAYS_TO_INGEST)}days*24hours): {len(settings.DAYS_TO_INGEST)*24}")
-    print(f"Dates ingested: {dataset["time"].size}")
-    dates = [date.strftime("%Y-%m-%d") for date in dataset.groupby("time.date").groups.keys()]
-    same_days_ingested = dates == settings.DAYS_TO_INGEST
-    print(f"Same days ingested as planned (no miss): {same_days_ingested}")
-    if not same_days_ingested:
-        differing_elements = list(set(dates) ^ set(settings.DAYS_TO_INGEST))
-        print(f"Missing days: {differing_elements}")
-    print(f"Duplicates dates: {dataset["time"].drop_duplicates("time").size != dataset["time"].size}")
+    expected_hours = len(expected_days) * 24
+    print(f"Expected hours: {expected_hours:,}")
+    print(f"Ingested hours: {dataset["time"].size:,}")
+    print(f"Hours equal: {expected_hours==dataset["time"].size}")
+    time_index = pandas.to_datetime(dataset["time"].values)
+    ingested_days = set(time_index.strftime("%Y-%m-%d").unique())
+    expected_set = set(expected_days)
+    missing_days = expected_set - ingested_days
+    extra_days = ingested_days - expected_set
+    if missing_days:
+        print(f"Missig days: {sorted(list(missing_days))}")
+    if extra_days:
+        print(f"Extra days: {sorted(list(extra_days))}")
+    if not missing_days and not extra_days:
+        print("All expected days are present.")
+    has_duplicates = len(time_index) != len(time_index.unique())
+    print(f"Duplicate timestamps: {has_duplicates}")
+
 
 def main() -> None:
-    print("########## TEST BRONZE ##########\n")
     start_time = time.time()
 
-    # Extract global dataset
-    #dataset = get_global_dataset("bronze/date=*/dataset.zarr")
-    #print(dataset)
-    # NULL CHECK (long execution: 10min)
-    #dataset_null_check(dataset)
-    # CHECKING NUMBER OF DAYS INGESTED
-    #dataset_days_check(dataset)
-
-    print("########## TEST SILVER ##########\n")
-    # Extract global dataset
-    dataset = get_global_dataset("silver/date=*/dataset.zarr")
-    #print(dataset)
-    # NULL CHECK (long execution: 20min)
-    #dataset_null_check(dataset)
-    # CHECKING NUMBER OF DAYS INGESTED
-    dataset_days_check(dataset)
+    for layer in [settings.BRONZE_PREFIX, settings.SILVER_PREFIX]:
+        print(f"########## TEST {layer.upper()} ##########")
+        try:
+            dataset = get_global_dataset(f"{layer}/date=*/dataset.zarr")
+            #print(dataset)
+            dataset_null_check(dataset)
+            dataset_days_check(dataset, settings.DAYS_TO_INGEST)
+        except Exception as e:
+            print(f"Error testing {layer}: {e}")
 
     end_time = time.time()
-    print(f"\nExecution time: {end_time - start_time:.2f}s")
+    print(f"\nTotal Execution time: {end_time - start_time:.2f}s")
+
 
 if __name__ == "__main__":
     main()
+
 
 """
 ########## TEST BRONZE ##########
@@ -93,30 +100,16 @@ Attributes:
     time_resolution:     1 hour
 ============================================================================================================================
 ========== NULL CHECK ==========
-precipitation_surface, total_elements=9119900160
-precipitation_surface, non_null_count=0
-precipitation_surface, null_percentage=100.00%
---------------------------------------------------
-temperature_2m, total_elements=9119900160
-temperature_2m, non_null_count=9032688000
-temperature_2m, null_percentage=0.96%
---------------------------------------------------
-wind_u_10m, total_elements=9119900160
-wind_u_10m, non_null_count=9057605760
-wind_u_10m, null_percentage=0.68%
---------------------------------------------------
-wind_v_10m, total_elements=9119900160
-wind_v_10m, non_null_count=9007770240
-wind_v_10m, null_percentage=1.23%
---------------------------------------------------
+precipitation_surface, total_elements=9119900160, non_null_count=0, null_percentage=100.00%
+temperature_2m, total_elements=9119900160, non_null_count=9032688000, null_percentage=0.96%
+wind_u_10m, total_elements=9119900160, non_null_count=9057605760, null_percentage=0.68%
+wind_v_10m, total_elements=9119900160, non_null_count=9007770240, null_percentage=1.23%
 ========== DAYS CHECK ==========
-Dates supposed to be ingested (366days*24hours): 8784
-Dates ingested: 8784
-Same days ingested as planned (no miss): True
-Duplicates dates: False
---------------------------------------------------
-Execution time: 673.37s
-
+Expected hours: 8,784
+Ingested hours: 8,784
+Hours equal: True
+All expected days are present.
+Duplicate timestamps: False
 
 ########## TEST SILVER ##########
 ============================================================================================================================
@@ -144,31 +137,19 @@ Attributes:
     time_resolution:     1 hour
 ============================================================================================================================
 ========== NULL CHECK ==========
-temperature_2m, total_elements=8995311360
-temperature_2m, non_null_count=8982852480
-temperature_2m, null_percentage=0.14%
--
-wind_direction_10m, total_elements=8995311360
-wind_direction_10m, non_null_count=8982852480
-wind_direction_10m, null_percentage=0.14%
--
-wind_speed_10m, total_elements=8995311360
-wind_speed_10m, non_null_count=8982852480
-wind_speed_10m, null_percentage=0.14%
--
-wind_u_10m, total_elements=8995311360
-wind_u_10m, non_null_count=8982852480
-wind_u_10m, null_percentage=0.14%
--
-wind_v_10m, total_elements=8995311360
-wind_v_10m, non_null_count=8982852480
-wind_v_10m, null_percentage=0.14%
+temperature_2m, total_elements=8995311360, non_null_count=8982852480, null_percentage=0.14%
+wind_direction_10m, total_elements=8995311360, non_null_count=8982852480, null_percentage=0.14%
+wind_speed_10m, total_elements=8995311360, non_null_count=8982852480, null_percentage=0.14%
+wind_u_10m, total_elements=8995311360, non_null_count=8982852480, null_percentage=0.14%
+wind_v_10m, total_elements=8995311360, non_null_count=8982852480, null_percentage=0.14%
 ========== DAYS CHECK ==========
-Dates supposed to be ingested (366days*24hours): 8784
-Dates ingested: 8664
-Same days ingested as planned (no miss): False
-Missing days: ['2015-11-23', '2015-10-15', '2015-11-07', '2015-05-13', '2015-09-25']
-Duplicates dates: False
+Expected hours: 8,784
+Ingested hours: 8,664
+Hours equal: False
+Missig days: ['2015-05-13', '2015-09-25', '2015-10-15', '2015-11-07', '2015-11-23']
+Duplicate timestamps: False
 
-Execution time: 1430.97s
+==================================================
+
+Total Execution time: 2125.57s
 """

@@ -12,7 +12,9 @@ from src.quality.validation import validate_dataset
 from src.quality.schema import NOAA_GFS_BRONZE_SCHEMA
 from src.utils.util import is_null_variable_percentage
 
+
 logger = logging.getLogger(__name__)
+
 
 class BronzeToSilverTransformer:
 
@@ -26,7 +28,9 @@ class BronzeToSilverTransformer:
         return xr.open_zarr(s3_url, storage_options=settings.storage_options, zarr_format=2)
 
 
-    def _apply_transformations(self, dataset: xr.Dataset) -> tuple[xr.Dataset, list[Hashable], list[Hashable]]:
+    def _apply_transformations(
+        self, dataset: xr.Dataset
+    ) -> tuple[xr.Dataset, list[Hashable], list[Hashable]]:
         """
         Applies domain-specific transformations to create the Silver layer.
         Domain-specific: wind speed, wind_direction
@@ -35,7 +39,10 @@ class BronzeToSilverTransformer:
         logger.info("Applying derived metric transformations...")
 
         # Drop variable >= 10.00% null
-        vars_to_drop = [var for var in dataset.data_vars if is_null_variable_percentage(dataset, var)]
+        vars_to_drop = [
+            var for var in dataset.data_vars 
+            if is_null_variable_percentage(dataset, var)
+        ]
         if vars_to_drop:
             logger.warning(f"Dropping variables due to null values: {vars_to_drop}")
             dataset = dataset.drop_vars(vars_to_drop)
@@ -88,6 +95,7 @@ class BronzeToSilverTransformer:
 
         return (dataset, vars_to_drop, vars_derived)
 
+
     def transform_and_save(self, partition_date: str) -> None:
         """Orchestrates the loading, validating, transforming, and saving of a single partition."""
         # Idempotency Check (Marker File)
@@ -95,7 +103,6 @@ class BronzeToSilverTransformer:
         if self.minio_client.object_exists(settings.BUCKET_NAME, marker_path):
             logger.info(f"Skipping {partition_date}, already done.")
             return
-
         try:
             start = time.time()
             # Load
@@ -144,9 +151,7 @@ class BronzeToSilverTransformer:
                 data=b"", 
                 content_type="text/plain"
             )
-
             logger.info(f"Successfully processed Silver partition: {partition_date}")
-
         except Exception as e:
             logger.error(f"Bronze to Silver transformation failed for {partition_date}: {e}")
             raise

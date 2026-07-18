@@ -9,6 +9,7 @@ from src.storage.paths import dataset_path, s3_path, gold_path
 from src.storage.minio import MinioClient
 from src.storage.metadata import build_gold_metadata, metadata_to_bytes
 
+
 logger = logging.getLogger(__name__)
 
 # geographical bounds for spatial aggregation (high to low)
@@ -17,6 +18,7 @@ REGIONS = {
     "north_america": {"lat_slice": slice(70.0, 15.0), "lon_slice": slice(-160.0, -50.0)},
     "global_land_approx": {"lat_slice": slice(90.0, -90.0), "lon_slice": slice(-180.0, 180.0)}
 }
+
 
 class SilverToGoldTransformer:
 
@@ -47,10 +49,12 @@ class SilverToGoldTransformer:
         )
         return len(buffer.getvalue())
 
+
     def transform_to_hourly_parquet(self) -> None:
         """Direct Copy to Parquet (Chunks the multidimensional array)"""
         # Defusing the operation, too much space use (300Gb, woud take me 50+hours).
         pass
+
 
     def transform_to_daily_parquet(self, ds: xr.Dataset, partition_date: str) -> None:
         """Temporal Rollup (Hourly -> Daily Min/Max/Mean)"""
@@ -107,6 +111,7 @@ class SilverToGoldTransformer:
             logger.error(f"Failed [Gold - Daily] transformation for {partition_date}: {e}")
             raise
 
+
     def transform_to_regional_parquet(self, ds: xr.Dataset, partition_date: str) -> None:
         """Spatial Aggregation (Grid -> Regions) + Temporal Rollup"""
         transfo_name = "daily_regional"
@@ -116,22 +121,18 @@ class SilverToGoldTransformer:
         if self.minio_client.object_exists(settings.BUCKET_NAME, marker_path):
             logger.info(f"Skipping [Gold - Regional] {partition_date}, already done.")
             return
-
         try:
             start = time.time()
             # Transformation
             region_rows = []
-
             for region_name, bounds in REGIONS.items():
                 # Slice the global grid to the specific region
                 ds_region = ds.sel(
                     latitude=bounds["lat_slice"], 
                     longitude=bounds["lon_slice"]
                 )
-
                 # Calculate the spatial and temporal average for this region for the day
                 region_agg = ds_region.mean(dim=["time", "latitude", "longitude"]).compute()
-
                 # Extract the scalar values
                 region_rows.append({
                     "date": partition_date,
@@ -177,6 +178,7 @@ class SilverToGoldTransformer:
         except Exception as e:
             logger.error(f"Failed [Gold - Regional] transformation for {partition_date}: {e}")
             raise
+
 
     def process_partition(self, partition_date: str) -> None:
         """Orchestrates the 3 Gold transformations for a single day."""

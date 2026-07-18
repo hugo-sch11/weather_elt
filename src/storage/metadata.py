@@ -5,6 +5,7 @@ import json
 import xarray as xr
 from typing import Any, Hashable
 
+
 @dataclass
 class IngestionMetadata:
     source: str
@@ -15,6 +16,7 @@ class IngestionMetadata:
     variable_count: int
     variables: list[str]
     dataset_size_bytes: int
+
 
 def build_ingestion_metadata(
     dataset: xr.Dataset,
@@ -33,6 +35,7 @@ def build_ingestion_metadata(
         dataset_size_bytes=dataset.nbytes
     )
 
+
 @dataclass
 class SilverMetadata:
     layer: str
@@ -46,6 +49,7 @@ class SilverMetadata:
     ingestion_timestamp: str
     execution_duration_seconds: float
     dataset_size_bytes: int
+
 
 def build_silver_metadata(
     dataset: xr.Dataset,
@@ -69,6 +73,7 @@ def build_silver_metadata(
         dataset_size_bytes=dataset.nbytes
     )
 
+
 @dataclass
 class GoldMetadata:
     layer: str
@@ -81,6 +86,7 @@ class GoldMetadata:
     file_size_bytes: int
     ingestion_timestamp: str
     execution_duration_seconds: float
+
 
 def build_gold_metadata(
     row_count: int,
@@ -105,6 +111,7 @@ def build_gold_metadata(
         ingestion_timestamp=datetime.now(timezone.utc).isoformat()
     )
 
+
 def metadata_to_bytes(metadata_obj) -> bytes:
     """
     Converts a dataclass to JSON bytes, safely handling datetimes.
@@ -120,3 +127,4 @@ def metadata_to_bytes(metadata_obj) -> bytes:
     metadata_dict = dataclasses.asdict(metadata_obj)
     json_str = json.dumps(metadata_dict, indent=2, default=json_serial)
     return json_str.encode("utf-8")
+
