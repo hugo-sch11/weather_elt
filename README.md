@@ -3,7 +3,18 @@
 An ELT pipeline that ingests, cleanses, and aggregates global weather data from the **NOAA Global Forecast System (GFS)**.
 Built using the **Medallion Architecture** (Bronze -> Silver -> Gold) and hosted entirely on a local **MinIO** object storage cluster.
 
-## Architectural Highlights
+## Key Features
+
+* Automated daily ingestion of weather data.
+* Medallion Architecture
+* Idempotent pipeline
+* Parallel processing
+* Data Quality validation
+* Metadata lineage
+* Parquet outputs for analytics
+* Dockerized local deployment
+
+## Architectural Points
 
 *   **Idempotency:** Relies on **Marker File** (`_SUCCESS` files) instead of traditional databases/registries. The orchestrator relies purely on the storage layer to determine state, allowing for instant retries and zero wasted compute on re-runs.
 *   **Efficient Streaming:** Utilizes **Xarray** and **Dask** to stream multidimensional Zarr arrays directly from remote sources to S3/MinIO in parallel without exploading RAM.
