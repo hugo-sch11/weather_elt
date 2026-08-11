@@ -12,11 +12,11 @@ from src.storage.metadata import build_gold_metadata, metadata_to_bytes
 
 logger = logging.getLogger(__name__)
 
-# geographical bounds for spatial aggregation (high to low)
+# geographical bounds for spatial aggregation
 REGIONS = {
     "europe": {"lat_slice": slice(70.0, 35.0), "lon_slice": slice(-10.0, 40.0)},
     "north_america": {"lat_slice": slice(70.0, 15.0), "lon_slice": slice(-160.0, -50.0)},
-    "global_land_approx": {"lat_slice": slice(90.0, -90.0), "lon_slice": slice(-180.0, 180.0)}
+    "global": {"lat_slice": slice(90.0, -90.0), "lon_slice": slice(-180.0, 180.0)}
 }
 
 
@@ -137,10 +137,10 @@ class SilverToGoldTransformer:
                 region_rows.append({
                     "date": partition_date,
                     "region": region_name,
-                    "temp_mean": float(region_agg["temperature_2m"].values),
-                    "temp_max": float(ds_region["temperature_2m"].max().compute().values),
-                    "wind_speed_mean": float(region_agg["wind_speed_10m"].values),
-                    "wind_speed_max": float(ds_region["wind_speed_10m"].max().compute().values)
+                    "temperature_2m_mean": float(region_agg["temperature_2m"].values),
+                    "temperature_2m_max": float(ds_region["temperature_2m"].max().compute().values),
+                    "wind_speed_10m_mean": float(region_agg["wind_speed_10m"].values),
+                    "wind_speed_10m_max": float(ds_region["wind_speed_10m"].max().compute().values)
                 })
 
             # Create a summary dataframe and write to parquet
