@@ -31,7 +31,7 @@ class SilverToGoldTransformer:
         s3_url = s3_path(path=silver_dataset_path)
         return xr.open_zarr(s3_url, storage_options=settings.storage_options, zarr_format=2)
 
-    def _write_parquet_to_minio(self, df: pd.DataFrame, transfo_name: str, partition_date: str, filename: str = "data.parquet") -> int:
+    def _write_parquet_to_minio(self, df: pd.DataFrame, transfo_name: str, partition_date: str, filename: str = "dataset.parquet") -> int:
         """Helper to flatten, convert to Parquet in memory, and upload to MinIO."""
         object_name = gold_path(transfo_name, partition_date) + filename
 
