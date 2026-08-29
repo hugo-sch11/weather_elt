@@ -22,6 +22,7 @@ echo ""
 password=${password:-minioadmin}
 echo "MINIO_ROOT_USER=$username" > .env
 echo "MINIO_ROOT_PASSWORD=$password" >> .env
+echo "MINIO_ENDPOINT=localhost:9000" >> .env
 
 # Check Docker
 if ! docker info > /dev/null 2>&1; then

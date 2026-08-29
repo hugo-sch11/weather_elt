@@ -3,9 +3,15 @@
 An ELT pipeline that ingests, cleanses, and aggregates global weather data from the **NOAA Global Forecast System (GFS)**.
 Built using the **Medallion Architecture** (Bronze -> Silver -> Gold) and hosted entirely on a local **MinIO** object storage cluster.
 
+## Why this project ?
+
+I built this project to know what does it actually take to build an ELT pipeline.
+I wanted to get hands-on experience and get the real challenges of data engineering like architectural choices, managing multidimensional data, fault-tolerant system, parallel computing, avoiding unoptimized transformation thereby memory explosions. Thus, it was a good exercise in learning by doing.
+
 ## Key Features
 
-* Automated daily ingestion of weather data.
+* Automated daily ingestion of weather data
+* Extract Load Transform
 * Medallion Architecture
 * Idempotent pipeline
 * Parallel processing
@@ -39,32 +45,21 @@ graph LR
     GDate --> GFiles["data.parquet<br/>metadata.json<br/>_SUCCESS"]
 ```
 
-## Bronze Layer (Raw)
-* **Format:** Multidimensional Zarr
-* **Action:** Extracts hourly global weather grids (Temperature, Wind U/V, Precipitation) from `dynamical.org` and streams them to MinIO partitioned by day.
-* **Idempotency:** Checks for `bronze/date=YYYY-MM-DD/_SUCCESS`.
+## Layer Specifications
 
-## Silver Layer (Cleansed & Conformed)
-* **Format:** Multidimensional Zarr
-* **Action:**
-    1. Passes data through a dynamic quality gates (schema bounds, null percentages, data type,..).
-    2. Drops corrupted variables automaticly.
-    3. Derives domain-specific metrics: Wind Speed ($\sqrt{u^2+v^2}$) and Meteorological Wind Direction (arctan2).
-* **Idempotency:** Checks for `silver/date=YYYY-MM-DD/_SUCCESS`.
+| Layer | Format | Purpose | Actions |
+|:--------:|:--------:|:--------:|:--------:|
+| Bronze | Multidimensional Zarr | Raw Ingestion | Extracts hourly global weather grids (Temperature, Wind U/V, Precipitation) from `dynamical.org` and streams them to MinIO partitioned by day. |
+| Silver | Multidimensional Zarr | Cleansed & Conformed | Passes data through dynamic quality gates, drops corrupted variables, and derives domain-specific metrics (Wind Speed $\sqrt{u^2+v^2}$ and Meteorological Direction U/V arctan2). |
+| Gold | Tabular Parquet  | Aggregations | Flattens grids for SQL engines. Computes Daily Global Rollups and Regional Spatial Aggregations (bounding boxes, simply regions) with their Min/Mean/Max. |
 
-## Gold Layer (Aggregations)
-* **Format:** Tabular Parquet (Optimized for SQL engines)
-* **Actions:**
-    * Daily Global Rollup: Aggregates 24 hourly steps into Daily Min/Mean/Max temperatures and wind speeds.
-    * Regional Spatial Aggregation: Slices the global grid into bounding boxes (i.e. Europe, North America) and calculates daily regional weather averages.
-* Idempotency: Granular markers for each transformation (`hourly_global/_SUCCESS`, `daily_global/_SUCCESS`).
 
 ## Tech Stack
 * **Languages:** `Python 3.13`
 * **Core Data:** `xarray`, `dask`
 * **Storage:** `minio-py`, `s3fs`
 * **Orchestration:** Native `concurrent.futures.ThreadPoolExecutor`
-* **Infrastructure:** `Docker (MinIO)`
+* **Infrastructure:** `Docker` (MinIO)
 
 ## Project Structure
 ```text
@@ -76,7 +71,7 @@ src/
 ├── storage/                # MinIO client, metadata builders, path builders, and logging handlers
 ├── transformations/        # Bronze to Silver & Silver to Gold logic
 ├── utils/                  # Helper functions
-└──tests/                   # Data tests and unit tests
+└── tests/                  # Data tests and unit tests
 ```
 
 ## Getting Started
