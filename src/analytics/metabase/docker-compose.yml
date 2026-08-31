@@ -1,13 +1,13 @@
 services:
   metabase:
-    image: metabase/metabase:v0.62.18.1
+    image: metabase/metabase:latest
     container_name: metabase
     ports:
       - "3000:3000"
+    volumes:
+      - ./plugins:/plugins:rw
+      - /mnt/storage/container/weather_analytics.duckdb:/weather_analytics.duckdb:ro
+      - ./metabase-data:/metabase-data:rw
     environment:
       MB_PLUGINS_DIR: /plugins
       MB_DB_FILE: /metabase-data/metabase.db
-    volumes:
-      - ./plugins:/plugins:rw
-      - ./metabase-data:/metabase-data:rw
-      - /mnt/storage/container/weather_analytics.duckdb:/data/weather_analytics.duckdb:ro

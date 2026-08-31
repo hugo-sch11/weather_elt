@@ -35,7 +35,7 @@ class Settings:
     })
 
     # TO MODIFY (this dataset range from 2015-01-15 to 2024-06-30)
-    DAYS_TO_INGEST = get_date_list("2015-01-15", 0) # done with 365, replace with 0 for quickstart
+    DAYS_TO_INGEST = get_date_list("2015-01-15", 0) # done with 365, 0 for quickstart
 
     TRANSFORMATION_DAILY_GLOBAL = "daily_global"
     TRANSFORMATION_DAILY_REGIONAL = "daily_regional"

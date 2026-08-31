@@ -1,0 +1,13 @@
+services:
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio_weather
+    ports:
+      - "9000:9000" # S3 API
+      - "9001:9001" # Web Console
+    volumes:
+      /mnt/storage/container/minio/weather:/weather-data-bucket # Change host path accordingly
+    env_file:
+      - .env
+    command: server /weather-data-bucket --console-address ":9001"
+    restart: unless-stopped
